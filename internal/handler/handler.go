@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -8,10 +9,14 @@ import (
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Welcome Home!")
 	cfg, err := config.Load()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(cfg)
+	data, err := json.MarshalIndent(cfg, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	formattedMessage := fmt.Sprintf("%s", data)
+	fmt.Fprint(w, formattedMessage)
 }
