@@ -2,9 +2,8 @@ package main
 
 import (
 	// "fmt"
-	"fmt"
+
 	"net/http"
-	"time"
 
 	// "github.com/Collap5e-dev/FlickPick/internal/config"
 
@@ -24,9 +23,4 @@ func main() {
 	router.HandleFunc("/", handler1.Home)
 	http.Handle("/", router)
 	http.ListenAndServe(":8080", nil)
-	fmt.Println("Running...")
-	for {
-		time.Sleep(time.Second)
-	}
-
 }
