@@ -1,4 +1,4 @@
-module github.com/oke11o/abrakadabra
+module github.com/Collap5e-dev/FlickPick
 
 go 1.22.5
 

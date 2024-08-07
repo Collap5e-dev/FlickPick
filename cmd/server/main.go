@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/oke11o/abrakadabra/internal/config"
+
+	"github.com/Collap5e-dev/FlickPick/internal/config"
 
 	"time"
 )
