@@ -8,6 +8,10 @@ import (
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 )
 
+type Handler struct {
+	cfg config.Config
+}
+
 func Home(w http.ResponseWriter, r *http.Request) {
 	cfg, err := config.Load()
 	if err != nil {
