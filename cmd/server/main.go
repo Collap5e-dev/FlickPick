@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Collap5e-dev/FlickPick/internal/config"
+	"github.com/gorilla/mux"
 
+	// "github.com/Collap5e-dev/FlickPick/internal/handler"
 	"time"
 )
 
@@ -13,7 +15,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//router := mux.CreateRouter
+	router := mux.NewRouter()
 	//router.Get("/", handler.Home)
 	//http.ListenAndServe(":8080", router)
 	fmt.Println(cfg)
