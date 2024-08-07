@@ -21,6 +21,8 @@ func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, formattedMessage)
 }
 
-func NewHandler(*cfg config.Config) *Handler {
-	return &Handler{config: config}
+func NewHandler(config config.Config) *Handler {
+	return &Handler{
+		config: config,
+	}
 }
