@@ -3,7 +3,9 @@ package main
 import (
 	// "fmt"
 
+	"fmt"
 	"net/http"
+	"strconv"
 
 	// "github.com/Collap5e-dev/FlickPick/internal/config"
 
@@ -18,9 +20,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("read config %v\n", cfg)
 	handler1 := handler.NewHandler(*cfg)
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler1.Home)
 	http.Handle("/", router)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+strconv.FormatInt(cfg.Port, 10), nil)
 }
