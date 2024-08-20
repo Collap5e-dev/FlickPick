@@ -17,14 +17,14 @@ type Handler struct {
 }
 
 type movieStruct struct {
-	Movie_id int `json:"movie_id"`
-	Kinopoisk_id int `json:"kinopoisk_id"`
-	Year int `json:"year"`
-	Name string `json:"name"`
-	Genre string `json:"genre"`
-	Rating_kp float64 `json:"rating_kp"`
-	Rating_imdb float64 `json:"rating_imdb"`
-	Rating_avg float64 `json:"rating_avg"`
+	Movie_id     int     `json:"movie_id"`
+	Kinopoisk_id int     `json:"kinopoisk_id"`
+	Year         int     `json:"year"`
+	Name         string  `json:"name"`
+	Genre        string  `json:"genre"`
+	Rating_kp    float64 `json:"rating_kp"`
+	Rating_imdb  float64 `json:"rating_imdb"`
+	Rating_avg   float64 `json:"rating_avg"`
 }
 
 func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
@@ -53,8 +53,8 @@ func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Ошибка при выполнении запроса: %v\n", err)
 	}
 	defer movieTable.Close()
+	movieList := make([][]byte, 0)
 	for movieTable.Next() {
-		movieList := make([][]byte, 0)
 		var movie_id, kinopoisk_id, year int
 		var name, genre string
 		var rating_kp, rating_imdb, rating_avg float64
@@ -63,23 +63,23 @@ func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("Ошибка при сканировании строки: %v\n", err)
 			continue
 		}
-		mStruct := movieStruct {
-			Movie_id: movie_id,
-			Name: name,
-			Rating_kp: rating_kp,
-			Rating_imdb: rating_imdb,
+		mStruct := movieStruct{
+			Movie_id:     movie_id,
+			Name:         name,
+			Rating_kp:    rating_kp,
+			Rating_imdb:  rating_imdb,
 			Kinopoisk_id: kinopoisk_id,
-			Rating_avg: rating_avg,
-			Genre: genre,
-			Year: year}
+			Rating_avg:   rating_avg,
+			Genre:        genre,
+			Year:         year}
 		data, err := json.MarshalIndent(mStruct, "", "\t")
 		if err != nil {
 			panic(err)
 		}
 		movieList = append(movieList, data)
-		formattedMessage := fmt.Sprintf("%s", movieList)
-		fmt.Fprint(w, formattedMessage)
 	}
+	formattedMessage := fmt.Sprintf("%s", movieList)
+	fmt.Fprint(w, formattedMessage)
 }
 
 func NewHandler(config config.Config, db *sqlx.DB) *Handler {
