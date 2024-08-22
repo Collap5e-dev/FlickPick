@@ -27,3 +27,6 @@ go.work.sum
 # My
 .token
 .idea
+server
+migrator
+apply_dump
