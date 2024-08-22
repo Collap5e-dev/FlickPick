@@ -3,12 +3,12 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+
+	_ "github.com/lib/pq"
 
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/model"
-	_ "github.com/lib/pq"
 )
 
 type repo interface {
@@ -36,5 +36,7 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprint(w, body)
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(body)
+	w.WriteHeader(http.StatusOK)
 }
