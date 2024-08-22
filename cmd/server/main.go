@@ -14,6 +14,7 @@ import (
 
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/handler"
+	"github.com/Collap5e-dev/FlickPick/internal/repo"
 	"github.com/gorilla/mux"
 	// "time"
 )
@@ -31,7 +32,8 @@ func main() {
 	}
 	defer db.Close()
 
-	handler1 := handler.NewHandler(cfg, db)
+	movieRepo := repo.NewMovieList(db)
+	handler1 := handler.NewHandler(cfg, movieRepo)
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler1.Home)
 	http.Handle("/", router)
