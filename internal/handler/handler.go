@@ -22,6 +22,7 @@ func NewHandler(config *config.Config, repo repo) *Handler {
 	}
 }
 
+// Handler handle requests
 type Handler struct {
 	config *config.Config
 	repo   repo
