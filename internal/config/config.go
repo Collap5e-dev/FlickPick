@@ -37,8 +37,9 @@ func (d Db) PgFormat() string {
 }
 
 type Config struct {
-	Db   Db
-	Port int64
+	Db            Db
+	Port          int64
+	MigrationPath string `envconfig:"migration_path" json:"migration_path"`
 }
 
 func Load() (*Config, error) {
