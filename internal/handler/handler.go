@@ -13,6 +13,7 @@ import (
 
 type repo interface {
 	GetMovieList(ctx context.Context) ([]model.Movie, error)
+	CreateUser(ctx context.Context, user model.User) error
 }
 
 func NewHandler(config *config.Config, repo repo) *Handler {
@@ -40,4 +41,19 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(body)
 	w.WriteHeader(http.StatusOK)
+}
+func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement me
+	ctx := r.Context()
+	_ = ctx
+	/*
+		1 Получить из r *http.Request username, password
+		2 Создать user := model.User{username: username, password: password}
+		3 Вызвать метод repo.CreateUser(ctx, user)
+		4 Написать в w http.ResponseWriter ответ типа {"Status":"OK"}
+	*/
+}
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	// TODO: implement me
 }
