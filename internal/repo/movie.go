@@ -2,14 +2,15 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"log"
 
-	"github.com/Collap5e-dev/FlickPick/internal/handler"
+	"github.com/Collap5e-dev/FlickPick/internal/model"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
-func NewMovieList (db *sqlx.DB) *MovieRepo {
+func NewMovieList(db *sqlx.DB) *MovieRepo {
 	return &MovieRepo{
 		db: db,
 	}
@@ -19,7 +20,7 @@ type MovieRepo struct {
 	db *sqlx.DB
 }
 
-func (r *MovieRepo) GetMovieList(ctx context.Context) ([]handler.MovieStruct, error) {
+func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
 	movieTable, err := r.db.Query(`
 		SELECT
 			movie_id,
@@ -36,10 +37,10 @@ func (r *MovieRepo) GetMovieList(ctx context.Context) ([]handler.MovieStruct, er
 			name
 	`)
 	if err != nil {
-		log.Fatalf("Ошибка при выполнении запроса: %v\n", err)
+		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
 	defer movieTable.Close()
-	movieList := make([]handler.MovieStruct, 0)
+	movieList := make([]model.Movie, 0)
 	for movieTable.Next() {
 		var movie_id, kinopoisk_id, year int
 		var name, genre string
@@ -49,7 +50,7 @@ func (r *MovieRepo) GetMovieList(ctx context.Context) ([]handler.MovieStruct, er
 			log.Fatalf("Ошибка при сканировании строки: %v\n", err)
 			continue
 		}
-		mStruct := handler.MovieStruct{
+		mStruct := model.Movie{
 			Movie_id:     movie_id,
 			Name:         name,
 			Rating_kp:    rating_kp,
