@@ -30,8 +30,8 @@ func main() {
 		log.Fatalf("Error connecting to the database: %v\n", err)
 	}
 	defer db.Close()
-	
-	handler1 := handler.NewHandler(*cfg, db)
+
+	handler1 := handler.NewHandler(cfg, db)
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler1.Home)
 	http.Handle("/", router)

@@ -12,7 +12,7 @@ import (
 )
 
 type Handler struct {
-	config config.Config
+	config *config.Config
 	db     *sqlx.DB
 }
 
@@ -82,7 +82,7 @@ func (h Handler) Home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, formattedMessage)
 }
 
-func NewHandler(config config.Config, db *sqlx.DB) *Handler {
+func NewHandler(config *config.Config, db *sqlx.DB) *Handler {
 	return &Handler{
 		config: config,
 		db:     db,
