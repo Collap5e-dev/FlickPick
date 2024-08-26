@@ -29,6 +29,19 @@ type Handler struct {
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
+	/*
+		func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
+			// TODO: implement me
+			ctx := r.Context()
+			_ = ctx
+
+				1 Получить из r *http.Request username, password
+				2 Создать user := model.User{username: username, password: password}
+				3 Вызвать метод repo.CreateUser(ctx, user)
+				4 Написать в w http.ResponseWriter ответ типа {"Status":"OK"}
+
+		}
+	*/
 	movieList, err := h.repo.GetMovieList(r.Context())
 	if err != nil {
 		panic(err)
