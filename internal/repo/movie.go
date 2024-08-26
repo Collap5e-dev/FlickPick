@@ -61,6 +61,6 @@ func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
 			Year:         year}
 		movieList = append(movieList, mStruct)
 	}
-
 	return movieList, nil
+	// test
 }
