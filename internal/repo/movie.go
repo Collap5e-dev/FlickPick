@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Collap5e-dev/FlickPick/internal/model"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+
+	"github.com/Collap5e-dev/FlickPick/internal/model"
 )
 
 func NewMovieList(db *sqlx.DB) *MovieRepo {
@@ -18,6 +19,11 @@ func NewMovieList(db *sqlx.DB) *MovieRepo {
 
 type MovieRepo struct {
 	db *sqlx.DB
+}
+
+func (r *MovieRepo) CreateUser(ctx context.Context, user model.User) error {
+	// TODO: implement me
+	return nil
 }
 
 func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
@@ -62,5 +68,4 @@ func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
 		movieList = append(movieList, mStruct)
 	}
 	return movieList, nil
-	// test
 }
