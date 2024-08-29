@@ -20,6 +20,20 @@ type MovieRepo struct {
 	db *sqlx.DB
 }
 
+func (r *MovieRepo) CreateUser(ctx context.Context, user model.User) error {
+	recordUser, err := r.db.Query(`
+		INSERT INTO 
+			users (username, password, email)
+		VALUES 
+		    (user.username, user.password, user.email)
+	`)
+	if err != nil {
+		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
+	}
+	defer recordUser.Close()
+	return nil
+}
+
 func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
 	movieTable, err := r.db.Query(`
 		SELECT
