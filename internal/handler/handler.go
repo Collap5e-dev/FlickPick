@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"net/mail"
 
 	_ "github.com/lib/pq"
 
@@ -47,17 +49,27 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
-	//ctx := r.Context()
-	//_ = ctx
 	var userData model.User
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err := json.Unmarshal(body, &userData); err != nil {
 		fmt.Errorf("ошибка обработки данных: %w", err)
 		return
 	}
 	defer r.Body.Close()
+	err, valid := validData(userData)
+	if err != nil {
+		fmt.Errorf("ошибка валидации данных: %w", err)
+		return
+	}
+	if valid {
+		fmt.Print("Данные валидны, регистрация прошла успешно")
+	}
 	username := userData.Username
-	password := userData.Password
+	password, err := hashPassword(userData.Password)
+	if err != nil {
+		fmt.Errorf("ошибка хэширования пароля: %w", err)
+		return
+	}
 	email := userData.Email
 	newUser := model.User{
 		Username: username,
@@ -86,6 +98,21 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	//ctx := r.Context()
 	//_ = ctx
 
+}
+
+func validData(user model.User) (error, bool) {
+	_, errMail := mail.ParseAddress(user.Email)
+	if len(user.Password) < 8 {
+		err := errors.New("пароль недостаточно надежный")
+		return err, false
+	} else if len(user.Username) < 3 {
+		err := errors.New("логин недостаточно надежный")
+		return err, false
+	} else if errMail != nil {
+		return errMail, false
+	} else {
+		return nil, true
+	}
 }
 
 func hashPassword(password string) (string, error) {
