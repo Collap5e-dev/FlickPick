@@ -64,11 +64,11 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err, valid := validData(userData)
 	if err != nil {
-		h.handlerError(w, 422, err, "ошибка валидации данных")
+		h.handlerError(w, 400, err, "ошибка валидации данных")
 		return
 	}
 	if valid {
-		fmt.Print("Данные валидны, регистрация прошла успешно")
+		fmt.Println("Данные валидны")
 	}
 	username := userData.Username
 	password, err := hashPassword(userData.Password)
@@ -84,7 +84,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	}
 	errCreateUser := h.repo.CreateUser(r.Context(), newUser)
 	if errCreateUser != nil {
-		h.handlerError(w, 500, err, "ошибка создания пользователя")
+		h.handlerError(w, 500, errCreateUser, "ошибка создания пользователя")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
