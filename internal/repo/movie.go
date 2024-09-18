@@ -21,12 +21,12 @@ type MovieRepo struct {
 }
 
 func (r *MovieRepo) CreateUser(ctx context.Context, user model.User) error {
-	recordUser, err := r.db.Query(`
+	recordUser, err := r.db.QueryContext(ctx, `
 		INSERT INTO 
 			users (username, password, email)
 		VALUES 
-		    (user.username, user.password, user.email)
-	`)
+		    ($1, $2, $3)
+	`, user.Username, user.Password, user.Email)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -35,7 +35,7 @@ func (r *MovieRepo) CreateUser(ctx context.Context, user model.User) error {
 }
 
 func (r *MovieRepo) GetMovieList(ctx context.Context) ([]model.Movie, error) {
-	movieTable, err := r.db.Query(`
+	movieTable, err := r.db.QueryContext(ctx, `
 		SELECT
 			movie_id,
 			name,

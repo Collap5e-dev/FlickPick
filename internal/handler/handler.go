@@ -34,6 +34,11 @@ type Handler struct {
 	repo   repo
 }
 
+type Error struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	movieList, err := h.repo.GetMovieList(r.Context())
 	if err != nil {
@@ -44,21 +49,22 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	w.Header().Add("Content-Type", "application/json")
-	w.Write(body)
 	w.WriteHeader(http.StatusOK)
+	w.Write(body)
+
 }
 
 func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	var userData model.User
 	body, err := io.ReadAll(r.Body)
 	if err := json.Unmarshal(body, &userData); err != nil {
-		fmt.Errorf("ошибка обработки данных: %w", err)
+		h.handlerError(w, 500, err, "ошибка обработки данных")
 		return
 	}
 	defer r.Body.Close()
 	err, valid := validData(userData)
 	if err != nil {
-		fmt.Errorf("ошибка валидации данных: %w", err)
+		h.handlerError(w, 422, err, "ошибка валидации данных")
 		return
 	}
 	if valid {
@@ -67,7 +73,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	username := userData.Username
 	password, err := hashPassword(userData.Password)
 	if err != nil {
-		fmt.Errorf("ошибка хэширования пароля: %w", err)
+		h.handlerError(w, 500, err, "ошибка хэширования пароля")
 		return
 	}
 	email := userData.Email
@@ -78,7 +84,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	}
 	errCreateUser := h.repo.CreateUser(r.Context(), newUser)
 	if errCreateUser != nil {
-		fmt.Errorf("ошибка создания пользователя: %w", err)
+		h.handlerError(w, 500, err, "ошибка создания пользователя")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -98,6 +104,21 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	//ctx := r.Context()
 	//_ = ctx
 
+}
+
+func (h *Handler) handlerError(w http.ResponseWriter, statusCode int, err error, text string) {
+	fmt.Println(text, err)
+	m := Error{
+		Status:  statusCode,
+		Message: text,
+	}
+	message, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(message)
 }
 
 func validData(user model.User) (error, bool) {
