@@ -8,17 +8,22 @@ import (
 	"io"
 	"net/http"
 	"net/mail"
+	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/model"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type repo interface {
 	GetMovieList(ctx context.Context) ([]model.Movie, error)
 	CreateUser(ctx context.Context, user model.User) error
+	GiveUserPass(ctx context.Context, loginData string) (string, error)
 }
 
 func NewHandler(config *config.Config, repo repo) *Handler {
@@ -100,10 +105,38 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	// TODO: implement me
-	//ctx := r.Context()
-	//_ = ctx
+	var userData model.User
+	body, err := io.ReadAll(r.Body)
+	if err := json.Unmarshal(body, &userData); err != nil {
+		h.handlerError(w, 500, err, "ошибка обработки данных")
+		return
+	}
+	if err != nil {
+		h.handlerError(w, 500, err, "ошибка чтения данных")
+		return
+	}
+	defer r.Body.Close()
 
+	pass, err := h.repo.GiveUserPass(r.Context(), userData.Username)
+	if err != nil {
+		h.handlerError(w, 500, err, "ошибка проверки пользователя")
+		return
+	}
+	if !checkHashPassword(userData.Password, pass) {
+		h.handlerError(w, 400, err, "неверно введен пароль")
+		return
+	}
+	token, err := createToken(userData.Username)
+	if err != nil {
+		h.handlerError(w, 500, err, "ошибка создания токена")
+		return
+	}
+	errorEncode := json.NewEncoder(w).Encode(map[string]string{"token": token})
+	if errorEncode != nil {
+		h.handlerError(w, 500, err, "ошибка отправки токена")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) handlerError(w http.ResponseWriter, statusCode int, err error, text string) {
@@ -148,3 +181,32 @@ func checkHashPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
+
+func createToken(username string) (string, error) {
+	err := godotenv.Load()
+	if err != nil {
+		return "", err
+	}
+	secretKey := os.Getenv("SECRET_KEY")
+	claims := jwt.MapClaims{
+		"username": username,
+		"exp":      time.Now().Add(time.Hour * 168).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+//func verifyToken(tokenStr string) (*jwt.Token, error) {
+//	token, err := jwt.ParseWithClaims(tokenStr, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+//		return secretKey, nil
+//	})
+//	if err != nil {
+//		return nil, err
+//	}
+//	return token, nil
+//}

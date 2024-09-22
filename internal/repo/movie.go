@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 
@@ -21,21 +20,16 @@ type MovieRepo struct {
 	db *sqlx.DB
 }
 
-func checkUserExists(db *sql.DB, email, username string) bool {
-	var exists bool
-	err := db.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE email = $1 OR username = $2)", email, username).Scan(&exists)
+func (r *MovieRepo) GiveUserPass(_ context.Context, loginData string) (string, error) {
+	var pass string
+	err := r.db.QueryRow("SELECT password FROM users WHERE email = $1 OR username = $1", loginData).Scan(&pass)
 	if err != nil {
-		fmt.Printf("ошибка при проверке пользователя: %s", err)
-		return false
+		return "", err
 	}
-	return exists
+	return pass, nil
 }
 
 func (r *MovieRepo) CreateUser(ctx context.Context, user model.User) error {
-	isUserExist := checkUserExists(r.db.DB, user.Email, user.Username)
-	if isUserExist {
-		return fmt.Errorf("такой пользователь уже существует")
-	}
 	recordUser, err := r.db.QueryContext(ctx, `
 		INSERT INTO 
 			users (username, password, email)

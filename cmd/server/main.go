@@ -37,7 +37,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", handler1.Home)
 	router.HandleFunc("/registration", handler1.Registration)
-	//router.HandleFunc("/login", handler1.Login)
+	router.HandleFunc("/login", handler1.Login)
 	http.Handle("/", router)
 	http.ListenAndServe(":"+strconv.FormatInt(cfg.Port, 10), nil)
 }
