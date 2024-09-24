@@ -8,16 +8,15 @@ import (
 	"io"
 	"net/http"
 	"net/mail"
-	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/model"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type repo interface {
@@ -126,13 +125,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		h.handlerError(w, 400, err, "неверно введен пароль")
 		return
 	}
-	token, err := createToken(userData.Username)
+	token, err := h.createToken(userData.Username)
 	if err != nil {
 		h.handlerError(w, 500, err, "ошибка создания токена")
 		return
 	}
-	errorEncode := json.NewEncoder(w).Encode(map[string]string{"token": token})
-	if errorEncode != nil {
+	err = json.NewEncoder(w).Encode(map[string]string{"token": token})
+	if err != nil {
 		h.handlerError(w, 500, err, "ошибка отправки токена")
 		return
 	}
@@ -152,6 +151,21 @@ func (h *Handler) handlerError(w http.ResponseWriter, statusCode int, err error,
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	w.Write(message)
+}
+
+func (h *Handler) createToken(username string) (string, error) {
+	secretKey := h.config.SecretKey
+	claims := jwt.MapClaims{
+		"username": username,
+		"exp":      time.Now().Add(time.Hour * 168).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
 
 func validData(user model.User) (error, bool) {
@@ -180,25 +194,6 @@ func hashPassword(password string) (string, error) {
 func checkHashPassword(password, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
-}
-
-func createToken(username string) (string, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return "", err
-	}
-	secretKey := os.Getenv("SECRET_KEY")
-	claims := jwt.MapClaims{
-		"username": username,
-		"exp":      time.Now().Add(time.Hour * 168).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(secretKey))
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
 }
 
 //func verifyToken(tokenStr string) (*jwt.Token, error) {
