@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/mail"
-	"os"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -16,7 +15,6 @@ import (
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/model"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -31,6 +29,10 @@ func NewHandler(config *config.Config, repo repo) *Handler {
 		config: config,
 		repo:   repo,
 	}
+}
+
+type TokenResponce struct {
+	Token string `json:"token"`
 }
 
 // Handler handle requests
@@ -94,14 +96,6 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 
-	/*
-		1 Получить из r *http.Request username, password
-		2 Создать user := model.User{username: username, password: password}
-		3 Вызвать метод repo.CreateUser(ctx, user)
-		4 Написать в w http.ResponseWriter ответ типа {"Status":"OK"}
-
-
-	*/
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -126,17 +120,19 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		h.handlerError(w, 400, err, "неверно введен пароль")
 		return
 	}
-	token, err := createToken(userData.Username)
+	token, err := h.createToken(userData.Username)
 	if err != nil {
 		h.handlerError(w, 500, err, "ошибка создания токена")
 		return
 	}
-	errorEncode := json.NewEncoder(w).Encode(map[string]string{"token": token})
-	if errorEncode != nil {
+	sendToken, err := json.Marshal(token)
+	if err != nil {
 		h.handlerError(w, 500, err, "ошибка отправки токена")
-		return
 	}
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	w.Write(sendToken)
+
 }
 
 func (h *Handler) handlerError(w http.ResponseWriter, statusCode int, err error, text string) {
@@ -182,12 +178,9 @@ func checkHashPassword(password, hashedPassword string) bool {
 	return err == nil
 }
 
-func createToken(username string) (string, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return "", err
-	}
-	secretKey := os.Getenv("SECRET_KEY")
+func (h *Handler) createToken(username string) (TokenResponce, error) {
+	var newToken TokenResponce
+	secretKey := h.config.SecretKey
 	claims := jwt.MapClaims{
 		"username": username,
 		"exp":      time.Now().Add(time.Hour * 168).Unix(),
@@ -196,9 +189,12 @@ func createToken(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", err
+		return newToken, err
 	}
-	return tokenString, nil
+	newToken = TokenResponce{
+		Token: tokenString,
+	}
+	return newToken, nil
 }
 
 //func verifyToken(tokenStr string) (*jwt.Token, error) {

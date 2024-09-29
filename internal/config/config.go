@@ -40,6 +40,7 @@ type Config struct {
 	Db            Db
 	Port          int64
 	MigrationPath string `envconfig:"migration_path" json:"migration_path"`
+	SecretKey     string `envconfig:"secret_key" json:"sekret_key"`
 }
 
 func Load() (*Config, error) {
