@@ -196,13 +196,3 @@ func (h *Handler) createToken(username string) (TokenResponce, error) {
 	}
 	return newToken, nil
 }
-
-//func verifyToken(tokenStr string) (*jwt.Token, error) {
-//	token, err := jwt.ParseWithClaims(tokenStr, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-//		return secretKey, nil
-//	})
-//	if err != nil {
-//		return nil, err
-//	}
-//	return token, nil
-//}
