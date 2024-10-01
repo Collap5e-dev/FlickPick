@@ -35,6 +35,11 @@ type TokenResponce struct {
 	Token string `json:"token"`
 }
 
+type LoginUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // Handler handle requests
 type Handler struct {
 	config *config.Config
@@ -99,7 +104,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	var userData model.User
+	var userData LoginUser
 	body, err := io.ReadAll(r.Body)
 	if err := json.Unmarshal(body, &userData); err != nil {
 		h.handlerError(w, 500, err, "ошибка обработки данных")
@@ -196,13 +201,3 @@ func (h *Handler) createToken(username string) (TokenResponce, error) {
 	}
 	return newToken, nil
 }
-
-//func verifyToken(tokenStr string) (*jwt.Token, error) {
-//	token, err := jwt.ParseWithClaims(tokenStr, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-//		return secretKey, nil
-//	})
-//	if err != nil {
-//		return nil, err
-//	}
-//	return token, nil
-//}
