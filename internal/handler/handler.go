@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 	"io"
 	"net/http"
 	"net/mail"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/model"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -70,13 +70,13 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	var userData model.User
 	body, err := io.ReadAll(r.Body)
 	if err := json.Unmarshal(body, &userData); err != nil {
-		h.handlerError(w, 500, err, "ошибка обработки данных")
+		h.HandlerError(w, 500, err, "ошибка обработки данных")
 		return
 	}
 	defer r.Body.Close()
 	err, valid := validData(userData)
 	if err != nil {
-		h.handlerError(w, 400, err, "ошибка валидации данных")
+		h.HandlerError(w, 400, err, "ошибка валидации данных")
 		return
 	}
 	if valid {
@@ -85,7 +85,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	username := userData.Username
 	password, err := hashPassword(userData.Password)
 	if err != nil {
-		h.handlerError(w, 500, err, "ошибка хэширования пароля")
+		h.HandlerError(w, 500, err, "ошибка хэширования пароля")
 		return
 	}
 	email := userData.Email
@@ -96,7 +96,7 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	}
 	errCreateUser := h.repo.CreateUser(r.Context(), newUser)
 	if errCreateUser != nil {
-		h.handlerError(w, 500, errCreateUser, "ошибка создания пользователя")
+		h.HandlerError(w, 500, errCreateUser, "ошибка создания пользователя")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -107,32 +107,32 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var userData LoginUser
 	body, err := io.ReadAll(r.Body)
 	if err := json.Unmarshal(body, &userData); err != nil {
-		h.handlerError(w, 500, err, "ошибка обработки данных")
+		h.HandlerError(w, 500, err, "ошибка обработки данных")
 		return
 	}
 	if err != nil {
-		h.handlerError(w, 500, err, "ошибка чтения данных")
+		h.HandlerError(w, 500, err, "ошибка чтения данных")
 		return
 	}
 	defer r.Body.Close()
 
 	pass, err := h.repo.GiveUserPass(r.Context(), userData.Username)
 	if err != nil {
-		h.handlerError(w, 500, err, "ошибка проверки пользователя")
+		h.HandlerError(w, 500, err, "ошибка проверки пользователя")
 		return
 	}
 	if !checkHashPassword(userData.Password, pass) {
-		h.handlerError(w, 400, err, "неверно введен пароль")
+		h.HandlerError(w, 400, err, "неверно введен пароль")
 		return
 	}
 	token, err := h.createToken(userData.Username)
 	if err != nil {
-		h.handlerError(w, 500, err, "ошибка создания токена")
+		h.HandlerError(w, 500, err, "ошибка создания токена")
 		return
 	}
 	sendToken, err := json.Marshal(token)
 	if err != nil {
-		h.handlerError(w, 500, err, "ошибка отправки токена")
+		h.HandlerError(w, 500, err, "ошибка отправки токена")
 	}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -140,7 +140,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) handlerError(w http.ResponseWriter, statusCode int, err error, text string) {
+func (h *Handler) HandlerError(w http.ResponseWriter, statusCode int, err error, text string) {
 	fmt.Println(text, err)
 	m := Error{
 		Status:  statusCode,
