@@ -9,11 +9,12 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
+	"github.com/gorilla/mux"
+
 	"github.com/Collap5e-dev/FlickPick/internal/config"
 	"github.com/Collap5e-dev/FlickPick/internal/handler"
 	"github.com/Collap5e-dev/FlickPick/internal/middleware"
 	"github.com/Collap5e-dev/FlickPick/internal/repo"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 	router.HandleFunc("/", handler1.Home)
 	router.HandleFunc("/registration", handler1.Registration)
 	router.HandleFunc("/login", handler1.Login)
-	router.HandleFunc("/movie/add", middleware.Auth(cfg, handler1.MovieAdd))
+	router.HandleFunc("/movie/add", middleware.Auth([]byte(cfg.SecretKey), handler1.MovieAdd))
 	http.Handle("/", router)
 	http.ListenAndServe(":"+strconv.FormatInt(cfg.Port, 10), nil)
 }
