@@ -1,0 +1,31 @@
+GET {{host}}
+Content-Type: application/json
+
+###
+
+POST {{host}}/registration
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password":"1234567",
+  "email": "test@test.ru"
+}
+
+###
+
+POST {{host}}/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password":"1234567"
+}
+
+###
+
+POST {{host}}/movie/add
+Content-Type: application/json
+Authorization: {{token}}
+
+{}

@@ -2,91 +2,57 @@ package middleware
 
 import (
 	"context"
-	"encoding/base64"
-	"errors"
+	"encoding/json"
 	"fmt"
-	"github.com/Collap5e-dev/FlickPick/internal/config"
-	"github.com/Collap5e-dev/FlickPick/internal/handler"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"strings"
 )
 
-func Auth(cfg *config.Config, method func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+type Error struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+func Auth(secretKey []byte, method func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "username", "from jwt")
-		r = r.WithContext(ctx)
-		h := &handler.Handler{}
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
-			h.HandlerError(w, 401, fmt.Errorf("токен не обнаружен"), "Токен не обнаружен")
-			return
-		}
-		error := isValidToken(tokenString)
-		if error != nil {
-			h.HandlerError(w, 401, error, "Ошибка при проверке токена")
+			HandlerError(w, 401, fmt.Errorf("токен не обнаружен"), "Токен не обнаружен")
 			return
 		}
 
-		token, err := VerifyToken(cfg, tokenString)
+		claims := &jwt.MapClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return secretKey, nil
+		}, jwt.WithExpirationRequired())
 		if err != nil {
-			h.HandlerError(w, 401, err, "Ошибка валидации токена")
+			HandlerError(w, 401, err, "Ошибка валидации токена")
 			return
 		}
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok || !token.Valid {
-			h.HandlerError(w, 401, fmt.Errorf("токен недействителен"), "Токен недействителен")
+		if !token.Valid {
+			HandlerError(w, 401, fmt.Errorf("токен недействителен"), "Токен недействителен")
 			return
 		}
-		fmt.Printf("Пользователь: %v\n", claims["username"])
+		cl := *claims
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "username", cl["username"])
+		r = r.WithContext(ctx)
 		method(w, r)
 
 	}
 }
 
-func VerifyToken(cfg *config.Config, tokenString string) (*jwt.Token, error) {
-	secretKey := cfg.SecretKey
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return secretKey, nil
-	})
+func HandlerError(w http.ResponseWriter, statusCode int, err error, text string) {
+	fmt.Println(text, err)
+	m := Error{
+		Status:  statusCode,
+		Message: text,
+	}
+	message, err := json.Marshal(m)
 	if err != nil {
-		fmt.Println("Ошибка при парсинге токена:", err)
-		return nil, err
+		panic(err)
 	}
-
-	return token, nil
-}
-
-func isValidToken(tokenString string) error {
-	parts := strings.Split(tokenString, ".")
-	if len(parts) != 3 {
-		return errors.New("token contains an invalid number of segments")
-	}
-
-	for i, part := range parts {
-		switch i {
-		case 0: // Header
-			if !isValidBase64(part) {
-				return errors.New("header segment is not valid base64")
-			}
-		case 1: // Payload
-			if !isValidBase64(part) {
-				return errors.New("payload segment is not valid base64")
-			}
-		case 2: // Signature
-			if !isValidBase64(part) {
-				return errors.New("signature segment is not valid base64")
-			}
-		default:
-			return errors.New("unexpected part in token")
-		}
-	}
-
-	return nil
-}
-
-func isValidBase64(s string) bool {
-	_, err := base64.StdEncoding.DecodeString(s)
-	return err == nil
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(message)
 }
