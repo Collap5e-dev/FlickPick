@@ -32,7 +32,7 @@ func NewHandler(config *config.Config, repo repo) *Handler {
 	}
 }
 
-type TokenResponce struct {
+type TokenResponse struct {
 	Token string `json:"token"`
 }
 
@@ -184,8 +184,8 @@ func checkHashPassword(password, hashedPassword string) bool {
 	return err == nil
 }
 
-func (h *Handler) createToken(username string) (TokenResponce, error) {
-	var newToken TokenResponce
+func (h *Handler) createToken(username string) (TokenResponse, error) {
+	var newToken TokenResponse
 	secretKey := h.config.SecretKey
 	claims := jwt.MapClaims{
 		"username": username,
@@ -197,7 +197,7 @@ func (h *Handler) createToken(username string) (TokenResponce, error) {
 	if err != nil {
 		return newToken, err
 	}
-	newToken = TokenResponce{
+	newToken = TokenResponse{
 		Token: tokenString,
 	}
 	return newToken, nil

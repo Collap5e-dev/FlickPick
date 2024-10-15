@@ -22,19 +22,19 @@ type MovieRepo struct {
 
 func (r *MovieRepo) CreateNewMovie(ctx context.Context, NewMovie model.Movie) error {
 	recordMovie, err := r.db.QueryContext(ctx, `
-		INSERT INTO 
+		INSERT INTO
 			content (
-			         name, 
-			         rating_kp, 
-			         rating_imdb, 
-			         kinopois_id, 
-			         rating_avg, 
-			         preview, 
-			         trailer, 
-			         genre, 
-			         year, 
+			         name,
+			         rating_kp,
+			         rating_imdb,
+			         kinopois_id,
+			         rating_avg,
+			         preview,
+			         trailer,
+			         genre,
+			         year,
 			         type)
-		VALUES 
+		VALUES
 		    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`,
 		NewMovie.Name,

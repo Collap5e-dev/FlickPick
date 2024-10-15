@@ -28,4 +28,15 @@ POST {{host}}/movie/add
 Content-Type: application/json
 Authorization: {{token}}
 
-{}
+{
+  "Name": "Рога и копыта",
+  "Rating_kp": "8.2",
+  "Rating_imdb": "4.2",
+  "Kinopoisk_id": "5123124",
+  "Rating_avg": "9.1",
+  "Preview": "test preview",
+  "Trailer": "testube.ru/test_url/",
+  "Genre": "Comedy",
+  "Year": "2001",
+  "Type": "Cartoon"
+}
