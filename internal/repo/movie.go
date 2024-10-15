@@ -20,6 +20,40 @@ type MovieRepo struct {
 	db *sqlx.DB
 }
 
+func (r *MovieRepo) CreateNewMovie(ctx context.Context, NewMovie model.Movie) error {
+	recordMovie, err := r.db.QueryContext(ctx, `
+		INSERT INTO 
+			content (
+			         name, 
+			         rating_kp, 
+			         rating_imdb, 
+			         kinopois_id, 
+			         rating_avg, 
+			         preview, 
+			         trailer, 
+			         genre, 
+			         year, 
+			         type)
+		VALUES 
+		    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`,
+		NewMovie.Name,
+		NewMovie.Rating_kp,
+		NewMovie.Rating_imdb,
+		NewMovie.Kinopoisk_id,
+		NewMovie.Rating_avg,
+		NewMovie.Preview,
+		NewMovie.Trailer,
+		NewMovie.Genre,
+		NewMovie.Year,
+		NewMovie.Type)
+	if err != nil {
+		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
+	}
+	defer recordMovie.Close()
+	return nil
+}
+
 func (r *MovieRepo) GiveUserPass(_ context.Context, loginData string) (string, error) {
 	var pass string
 	err := r.db.QueryRow("SELECT password FROM users WHERE email = $1 OR username = $1", loginData).Scan(&pass)

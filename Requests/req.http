@@ -7,9 +7,9 @@ POST {{host}}/registration
 Content-Type: application/json
 
 {
-  "username": "test",
-  "password":"1234567",
-  "email": "test@test.ru"
+  "username": "test1",
+  "password":"12345678",
+  "email": "test1@test.ru"
 }
 
 ###
@@ -18,8 +18,8 @@ POST {{host}}/login
 Content-Type: application/json
 
 {
-  "username": "test",
-  "password":"1234567"
+  "username": "test1",
+  "password":"12345678"
 }
 
 ###

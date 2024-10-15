@@ -22,6 +22,7 @@ type repo interface {
 	GetMovieList(ctx context.Context) ([]model.Movie, error)
 	CreateUser(ctx context.Context, user model.User) error
 	GiveUserPass(ctx context.Context, loginData string) (string, error)
+	CreateNewMovie(ctx context.Context, NewMovie model.Movie) error
 }
 
 func NewHandler(config *config.Config, repo repo) *Handler {

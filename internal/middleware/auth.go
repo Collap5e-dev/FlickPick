@@ -22,7 +22,7 @@ func Auth(secretKey []byte, method func(http.ResponseWriter, *http.Request)) fun
 		}
 
 		claims := &jwt.MapClaims{}
-		token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return secretKey, nil
 		}, jwt.WithExpirationRequired())
 		if err != nil {
