@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("Error connecting to the database: %v\n", err)
 	}
 	defer db.Close()
-
+	//logger := middleware.NewLogger()
 	movieRepo := repo.NewMovieList(db)
 	handler1 := handler.NewHandler(cfg, movieRepo)
 	router := mux.NewRouter()

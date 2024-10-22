@@ -27,7 +27,7 @@ func (r *MovieRepo) CreateNewMovie(ctx context.Context, NewMovie model.Movie) er
 			         name,
 			         rating_kp,
 			         rating_imdb,
-			         kinopois_id,
+			         kinopoisk_id,
 			         rating_avg,
 			         preview,
 			         trailer,
